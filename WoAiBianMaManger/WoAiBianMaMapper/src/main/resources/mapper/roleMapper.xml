@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zbf.mapper.RoleMapper">
+
+
+    <!-- 角色列表 -->
+    <select id="getRolePage" resultType="map" parameterType="page">
+
+        select lr.*,GROUP_CONCAT(lu.userName) userName from lcg_role lr LEFT JOIN lcg_user_role lur on lur.role_id=lr.id
+        LEFT JOIN lcg_user lu on lu.id=lur.user_id
+        where 1=1
+        <if test="params.roleName!=null and params.roleName!=''">
+            AND lr.name like CONCAT('%',#{params.roleName},'%')
+        </if>
+        GROUP BY lr.id order by lr.id desc
+    </select>
+
+    <delete id="deleteByRoleId" parameterType="map" >
+        delete from lcg_role where id=#{id}
+    </delete>
+
+    <delete id="deleteRoleMenu" parameterType="map">
+        delete from lcg_role_menu where role_id=#{id}
+    </delete>
+
+    <insert id="addRole" parameterType="map">
+        insert into lcg_role(id,name,miaoshu)values (#{id},#{name},#{miaoshu})
+    </insert>
+
+
+    <insert id="addRoleMenu" parameterType="list">
+        insert into lcg_role_menu(id,version,role_id,menu_id,date)
+        values
+        <foreach collection="list" separator="," item="item">
+            (#{item.id},10,#{item.roleId},#{item.menuId},NOW())
+        </foreach>
+    </insert>
+
+
+    <update id="updateRole" parameterType="map">
+        update lcg_role set name=#{name},miaoshu=#{miaoshu} where id=#{id}
+    </update>
+
+    <select id="getRoleListByQuery" parameterType="map" resultType="map">
+
+        select lr.id as lable,lr.name as value from lcg_role lr
+        where 1=1
+        <if test="query!=null and query!=''">
+            and lr.name like CONCAT('%',#{query},'%')
+        </if>
+    </select>
+
+</mapper>

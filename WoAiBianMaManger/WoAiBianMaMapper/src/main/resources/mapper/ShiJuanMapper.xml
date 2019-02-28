@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zbf.mapper.ShiJuanMapper">
+
+<select id="getfenlei" parameterType="map" resultType="map">
+
+    select * from  lcg_shijuan_fenlei
+
+</select>
+
+    <select id="getbumenList" parameterType="page" resultType="map">
+
+    select bm.bumenid,bm.bumenname,COUNT(ex.bumenid) as jishu from  ly_bumenlist bm LEFT JOIN ly_examuser ex on bm.bumenid=ex.bumenid
+        <where>
+            <if test="params.bumenname!=null and params.bumenname!=''">
+                and bm.bumenname like CONCAT('%',#{params.bumenname},'%')
+            </if>
+
+        </where>
+
+     GROUP BY bm.bumenid
+
+
+  </select>
+
+
+
+
+    <select id="getuserList" parameterType="page" resultType="map">
+        SELECT  ex.userid,bumen.bumenname, ex.username,ex.zhenshiname,ex.idCard,ex.userstatus  , ex.Lastlogintime as  Lastlogintime,ex.cishu as cishu    FROM ly_examuser ex  LEFT JOIN ly_bumenlist  bumen on bumen.bumenid=ex.bumenid
+        <where>
+            <if test="params.bumenname!=null and params.bumenname!=''">
+                and bm.bumenname like CONCAT('%',#{params.bumenname},'%')
+            </if>
+
+        </where>
+
+    </select>
+
+    <insert id="Addshijuan" parameterType="map">
+
+INSERT  INTO lcg_shijuan (id,fenleiid,zhuangtai,shijuanname,starttime,endtime,opentime,shijian,havedaan,shijuanleixing
+,shitishunxu,shuoming,createuserid,createtime)
+    values (#{shijuanid},#{fenleiid},#{shijuanzhuangtai},#{shijuanname},#{startTime},#{endTime},#{openTime},#{shijian},#{daanstatus},#{shijuanleixing},#{shijuansort},#{shijuanshuoming},#{createuserid},#{createtime})
+    </insert>
+
+    <insert id="AddshijuanUser" parameterType="map">
+      INSERT INTO lcg_shijuan_user(id,shijuanid,userid) values (#{id},#{shijuanid},#{userid})
+
+    </insert>
+    <insert id="AddshijuanBumen" parameterType="map">
+      INSERT INTO lcg_shijuan_bumen(id,shijuanid,bumenid) values (#{id},#{shijuanid},#{bumenid})
+
+    </insert>
+
+
+    <select id="ShiJuanList" parameterType="page" resultType="map">
+    SELECT sj.*,ur.username,CONCAT(sj
+.createtime,ur.userName) as createname,CONCAT(sj.starttime,sj.endtime) as tiemsheding FROM lcg_shijuan  sj  LEFT JOIN lcg_user   ur on  sj.createuserid=ur.id
+
+    </select>
+
+
+
+</mapper>

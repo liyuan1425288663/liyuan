@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zbf.mapper.TiKuMapper">
+
+    <insert id="addTiKuInfo" parameterType="map">
+         insert into lcg_tiku(id,tikuname,tikushuoming,tikuzhuangtai,createtime)
+         values (#{id},#{tikuname},#{tikushuoming},#{tikuzhuangtai},NOW())
+    </insert>
+
+    <select id="getTikuList" parameterType="page" resultType="map">
+        select tk.*,COUNT(tm.tikuid) as shuliang  from lcg_tiku tk LEFT JOIN lcg_timu tm  on tk.id=tm.tikuid
+
+        <where>
+            <if test="params.tikuname!=null and params.tikuname!=''">
+                and ltk.tikuname like CONCAT('%',#{params.tikuname},'%')
+            </if>
+            <if test="params.tikuzhuangtai!=null and params.tikuzhuangtai!=''">
+                and ltk.tikuzhuangtai=#{params.tikuzhuangtai}
+            </if>
+        </where>
+        GROUP BY tm.tikuid
+        order  by tk.createtime desc
+    </select>
+
+    <update id="updateTiKuInfo" parameterType="map">
+        update lcg_tiku
+        <set>
+            <if test="tikuname!=null and tikuname!=''">tikuname=#{tikuname},</if>
+            <if test="tikuzhuangtai!=null and tikuzhuangtai!=''">tikuzhuangtai=#{tikuzhuangtai},</if>
+            <if test="tikushuoming!=null and tikushuoming!=''">tikushuoming=#{tikushuoming},</if>
+        </set>
+        <where>
+            <if test="id!=null and id!=''">
+                and id=#{id}
+            </if>
+        </where>
+    </update>
+
+
+    <delete id="delTiKu" parameterType="map">
+
+        delete  from  lcg_tiku where  id=#{id}
+    </delete>
+
+    <insert id="toAddShiTi" parameterType="map">
+
+INSERT INTO lcg_timu (id,createuserid,tixingid,tikuid,shitizhuangtai,nanduid,laiyuan,tigan,daan,createtime,timujiexi)
+values (#{id},#{createuserid},#{tixingid},#{tikuid},#{shitizhuangtai},#{nanduid},#{laiyuan},#{tigan},#{checkList},#{createtime},#{timujiexi})
+
+  </insert>
+
+    <insert id="toAddjiexi" parameterType="map">
+
+        INSERT INTO lcg_timu_jiexi (id,timuid,timujiexi)
+        values (#{id},#{timuid},#{timujiexi})
+
+  </insert>
+
+
+    <insert id="toABCD" parameterType="map">
+        INSERT INTO lcg_timu_shezhi (id,xuanxiangbianhao,xuanxiang,timuid)
+        values (#{id},#{xuanxiangbianhao},#{xuanxiang},#{timuid})
+  </insert>
+
+
+    <select id="shitiList" parameterType="page" resultType="map">
+        SELECT tm.id,tk.tikuname,tm.createuserid,tx.tixingname,nd.nandu,tm.tigan,tm.shitizhuangtai,CONCAT(tm.createtime,user.userName)  as createname  FROM lcg_timu tm
+        LEFT JOIN lcg_timu_nandu nd ON tm.nanduid=nd.id
+        LEFT JOIN lcg_timu_tixing tx  on tm.tixingid=tx.id
+        LEFT JOIN lcg_tiku tk  ON tm.tikuid=tk.id
+        LEFT JOIN lcg_user user on tm.createuserid=user.id
+        <where>
+            <if test="params.shitizhuangtai!=null and params.shitizhuangtai!=''">
+                and tm.shitizhuangtai =#{params.shitizhuangtai}
+            </if>
+            <if test="params.tikuid!=null and params.tikuid!=''">
+                and tk.id=#{params.tikuid}
+            </if>
+            <if test="params.nanduid!=null and params.nanduid!=''">
+                and tm.nanduid=#{params.nanduid}
+            </if>
+            <if test="params.shitileixing!=null and params.shitileixing!=''">
+                and tm.tixingid=#{params.shitileixing}
+            </if>
+
+        </where>
+        order  by tm.id desc
+    </select>
+
+
+    <delete id="deltimu" parameterType="map">
+
+    DELETE FROM lcg_timu WHERE id=#{id}
+    </delete>
+
+    <select id="getShiTiById" parameterType="map" resultType="map">
+SELECT tm.id as id,tk.tikuname as tikuname,tm.createuserid  as createuserid,tm.tixingid as tixingid ,     tx.tixingname as tixingname,nd.nandu as nandu ,
+		tm.tigan as  tigan,tm.shitizhuangtai as shitizhuangtai ,CONCAT(tm.createtime,user.userName)  as createname, tm.daan as daan,
+ GROUP_CONCAT(shezhi.xuanxiangbianhao)   as xuanxiangbianhao,  tm.timujiexi as timujiexi ,  GROUP_CONCAT(shezhi.xuanxiang) as xuanxiangmiaoshu
+
+ FROM lcg_timu tm LEFT JOIN lcg_timu_nandu nd ON tm.nanduid=nd.id LEFT JOIN lcg_timu_tixing tx  on
+        tm.tixingid=tx.id LEFT JOIN lcg_tiku tk  ON tm.tikuid=tk.id  LEFT JOIN lcg_user user on tm.createuserid=user.id
+LEFT JOIN lcg_timu_shezhi shezhi ON tm.id=shezhi.timuid    WHERE tm.id=1902221037560000
+
+ GROUP BY tm.id
+    </select>
+
+
+
+    <delete id="deltimushezhi" parameterType="map">
+
+    DELETE FROM lcg_timu_shezhi WHERE timuid=#{id}
+</delete>
+
+    <select id="getShitiDataListByTiKu" parameterType="page" resultType="map">
+    select   tm.tixingid, tm.tigan,tm.daan,tm.timujiexi  ,GROUP_CONCAT(  DISTINCT(sz.xuanxiangbianhao) )as xuanxiangbianhao ,GROUP_CONCAT(  DISTINCT(sz.xuagetShitiByIdnxiang) ) as xuanxiang from lcg_timu   tm  LEFT JOIN lcg_timu_shezhi sz on tm.id=sz.timuid
+
+          where tikuid=#{params.id}
+          group by tm.tigan
+    </select>
+    <select id="getTiKUFenXi" parameterType="map" resultType="map">
+        select lt.tixingid as name,COUNT(lt.tixingid) as value from lcg_timu lt where lt.tikuid=#{tikuid} GROUP BY lt.tixingid
+    </select>
+
+
+</mapper>

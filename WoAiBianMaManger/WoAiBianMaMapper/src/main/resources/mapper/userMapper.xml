@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.zbf.mapper.UserMapper">
+
+    <resultMap id="user" type="user">
+        <result column="id" property="id"></result>
+        <result column="userName" property="username"></result>
+        <result column="loginName" property="loginname"></result>
+        <result column="passWord" property="password"></result>
+    </resultMap>
+
+    <select id="getUserByUserName" resultMap="user" parameterType="user">
+        select * from lcg_user where loginName =#{loginname}
+    </select>
+
+    <select id="getBySchoolUserName" resultMap="user" parameterType="user">
+        select * from ly_examuser where username =#{loginname}
+    </select>
+
+
+
+    <select id="getUserById" parameterType="string" resultType="map">
+        select * from lcg_user where id=#{userid}
+    </select>
+    <select id="getKaoShengInfo" parameterType="string" resultType="map">
+    SELECT ex.id,ex.username,ex.zhenshiname,ex.Lastlogintime,ex.cishu,bm.bumenname  FROM ly_examuser ex LEFT JOIN ly_bumenlist bm on ex .bumenid=bm.bumenid where id=#{userid}
+    </select>
+
+
+
+
+    <select id="getUserList" parameterType="page" resultType="map">
+        select DISTINCT lu.*,GROUP_CONCAT(lr.name) roleName from lcg_user lu LEFT JOIN lcg_user_role lur on lu.id=lur.user_id
+        LEFT JOIN lcg_role lr on lur.role_id=lr.id where 1=1
+        <if test="params.userName!=null and params.userName!=''">
+            AND lu.userName like CONCAT('%',#{params.userName},'%')
+        </if>
+        <if test="params.sex!=null and params.sex!=''">
+            AND lu.sex=#{params.sex}
+        </if>
+        <if test="params.startDate!=null and params.startDate!=''">
+            AND lu.createTime >= #{params.startDate}
+        </if>
+        <if test="params.endDate!=null and params.endDate!=''">
+            AND lu.createTime <![CDATA[<=]]> #{params.endDate}
+        </if>
+        GROUP BY lu.id
+        ORDER BY lu.id desc
+    </select>
+
+
+    <insert id="toBangDingRoleForUser" parameterType="list">
+        insert into lcg_user_role(id,user_id,role_id)
+        values
+        <foreach collection="list" separator="," item="mm" >
+            (#{mm.id},#{mm.userId},#{mm.roleId})
+        </foreach>
+    </insert>
+
+    <delete id="deleteRoleUser" parameterType="string">
+        delete from lcg_user_role where user_id=#{userId}
+    </delete>
+
+    <update id="onlyUpdateUserInfo" parameterType="map">
+
+UPDATE  lcg_user set passWord=#{passWord},loginName=#{loginName},sex=#{sex} ,buMen=#{buMen},userName=#{userName}  WHERE id=#{id}
+    </update>
+
+
+
+
+
+</mapper>

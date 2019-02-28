@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zbf.mapper.MenuMapper">
+
+    <resultMap id="menu" type="menu">
+        <result column="id" property="id" jdbcType="BIGINT"></result>
+        <result column="menu_name" property="menuName" jdbcType="VARCHAR"></result>
+        <result column="url" property="url" jdbcType="VARCHAR"></result>
+        <result column="router_path" property="routerPath" jdbcType="VARCHAR"></result>
+        <result column="parent_menu_id" property="parentMenuId" jdbcType="BIGINT"></result>
+        <result column="is_delete" property="isDelete" jdbcType="INTEGER"></result>
+    </resultMap>
+
+    <select id="getListMenu" parameterType="menu" resultMap="menu">
+        select vm.* from vue_menu vm where 1=1
+        <if test="parentMenuId !=null and parentMenuId!=0">
+            AND vm.parent_menu_id=#{parentMenuId}
+        </if>
+        <if test="leval !=null and leval!=0">
+            AND vm.leval=#{leval}
+        </if>
+        <if test="isDelete !=null and isDelete!=0">
+            AND vm.is_delete=#{isDelete}
+        </if>
+    </select>
+    <select id="getListMenuByRoleIds" parameterType="menu" resultMap="menu">
+        select DISTINCT vm.* from lcg_role lr
+        LEFT JOIN lcg_role_menu lrm ON lr.id=lrm.role_id
+        LEFT JOIN vue_menu vm ON lrm.menu_id=vm.id where 1=1
+        <if test="parentMenuId !=null and parentMenuId!=0">
+            AND vm.parent_menu_id=#{parentMenuId}
+        </if>
+        <if test="leval !=null and leval!=0">
+            AND vm.leval=#{leval}
+        </if>
+        <if test="roleIds !=null and roleIds!=''">
+            AND lr.id in(${roleIds})
+        </if>
+        <if test="isDelete !=null and isDelete!=0">
+            AND vm.is_delete=#{isDelete}
+        </if>
+    </select>
+
+    <select id="menuList" parameterType="page" resultType="menu">
+          select * from vue_menu
+     </select>
+
+    <insert id="addOneMenuInfo" parameterType="menu" >
+        insert into vue_menu(id,leval,menu_name,url,parent_menu_id,is_delete)values (
+          #{id},
+          #{leval},
+          #{menuName},
+          #{url},
+          #{parentMenuId},
+          '0'
+        )
+    </insert>
+    <update id="updateMenu" parameterType="menu">
+
+    UPDATE  vue_menu set menu_name=#{menuName},url=#{url} WHERE id=#{id}
+    </update>
+    <delete id="delMenu" parameterType="menu">
+        delete  from  vue_menu where  id=#{id}
+    </delete>
+
+
+</mapper>
